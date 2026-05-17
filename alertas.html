@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Alertas de Anomalias</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #003366;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 100px auto;
+      background: #C8D9EC;
+      border-radius: 12px;
+      box-shadow: 0 2px 18px rgba(0, 0, 0, 0.15);
+      padding: 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    h2 {
+      color: #003366;
+      margin-bottom: 18px;
+    }
+
+    form {
+      text-align: center;
+    }
+
+    label {
+      display: inline-block;
+      margin: 8px 30px;
+      font-weight: bold;
+      color: #003366;
+    }
+
+    .alert-box {
+      background: #f2aeae;
+      border: 1px solid #d32f2f;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-top: 12px;
+      color: #581103;
+      text-align: left;
+      font-size: 16px;
+      max-height: 900px;
+      margin-bottom: 4px;
+    }
+
+    .alert-box ul {
+      margin: 0;
+      padding-left: 15px;
+      list-style: none;
+    }
+
+    .alert-box li {
+      margin: 14px 0;
+      text-align: left;
+      font-weight: normal;
+      font-size: larger;
+      color: #991f1f;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      border: none;
+      font-size: 18px;
+      color: #003366;
+      background: transparent;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" id="popup">
+    <button class="close-btn" type="button">x</button>
+
+    <h2>Selecione o tipo de anomalia:</h2>
+
+    <form>
+      <label>
+        <input type="checkbox" id="ocupacao" onchange="filtrarAlertas()"> Taxa de ocupação
+      </label>
+      <label>
+        <input type="checkbox" id="reservas" onchange="filtrarAlertas()"> Número de reservas
+      </label>
+      <label>
+        <input type="checkbox" id="geograficas" onchange="filtrarAlertas()"> Geográficas
+      </label>
+    </form>
+
+    <!-- contentor onde vão aparecer as CAIXAS dos alertas -->
+    <div id="alertas" class="alert-list"></div>
+  </div>
+
+  <script>
+    // dados dos alertas com categoria
+    const ALERTAS = [
+      { texto: 'Moradia em Alvalade com +300 alugados por ano', categoria: 'ocupacao' },
+      { texto: '3 moradias com ocupação > 90 % em Cascais', categoria: 'ocupacao' },
+      { texto: 'Host com > 500 reservas no último ano', categoria: 'reservas' },
+      { texto: 'Zona de Lisboa com crescimento anómalo de listagens', categoria: 'geograficas' },
+    ];
+
+    // renderização baseada nos filtros
+    function filtrarAlertas() {
+      const ocupacao = document.getElementById('ocupacao').checked;
+      const reservas = document.getElementById('reservas').checked;
+      const geograficas = document.getElementById('geograficas').checked;
+
+      const filtrosAtivos = [];
+      if (ocupacao) filtrosAtivos.push('ocupacao');
+      if (reservas) filtrosAtivos.push('reservas');
+      if (geograficas) filtrosAtivos.push('geograficas');
+
+      // se não houver filtros: mostra TODOS
+      const container = document.getElementById('alertas');
+      container.innerHTML = '';
+
+      const visiveis = filtrosAtivos.length === 0
+        ? ALERTAS
+        : ALERTAS.filter(a => filtrosAtivos.includes(a.categoria));
+
+      visiveis.forEach(a => {
+        const box = document.createElement('div');
+        box.className = 'alert-box';
+        box.textContent = a.texto;
+        container.appendChild(box);
+      });
+    }
+
+    // ao carregar a página: mostrar todos
+    filtrarAlertas();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsideAirbnb - Comparador de Dados</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-dark: #003366;
+            --navy-medium: #003366;
+            --blue-light: #C8D9EC;
+            --white: #FFFFFF;
+            --text-dark: #1E3A5F;
+            --border-color: #5A7AA0;
+            --sidebar-width: 450px;
+            --header-height: 100px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sansation', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 700;
+            background-color: var(--navy-dark);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--navy-medium);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            border-bottom: 2px solid var(--white);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 2px solid var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(-4px);
+        }
+
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--white);
+            stroke-width: 2;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.5px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--blue-light);
+            border: 3px solid var(--white);
+            cursor: pointer;
+            transition: transform var(--transition-speed);
+            overflow: hidden;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .main-container {
+            margin-top: var(--header-height);
+            display: flex;
+            min-height: calc(100vh - var(--header-height));
+            position: relative;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--blue-light);
+            padding: 40px 30px;
+            position: fixed;
+            left: 0;
+            top: var(--header-height);
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+            transform: translateX(0);
+            transition: transform var(--transition-speed) ease;
+            z-index: 90;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(calc(-1 * var(--sidebar-width)));
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: calc(var(--header-height) + 20px);
+            width: 40px;
+            height: 60px;
+            background-color: var(--blue-light);
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left var(--transition-speed) ease;
+            z-index: 95;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.hidden + .sidebar-toggle {
+            left: 0;
+        }
+
+        .sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-dark);
+            stroke-width: 2;
+            transition: transform var(--transition-speed);
+        }
+
+        .sidebar.hidden + .sidebar-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .filters-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 80px;
+        }
+
+        .filter-button {
+            padding: 10px 24px;
+            background-color: var(--white);
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .filter-button:hover {
+            background-color: var(--navy-medium);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 20px 0 20px 0;
+            padding: 15px 0 15px 20px;
+            text-align: left;
+            position: relative;
+            border-left: 4px solid var(--navy-medium);
+        }
+
+        .section-divider {
+            width: 100%;
+            height: 3px;
+            background-color: var(--navy-medium);
+            margin: 20px 0;
+            border-radius: 2px;
+        }
+
+        .metrics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metric-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .metric-item:hover {
+            background-color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .metric-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            background-color: var(--white);
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: all var(--transition-speed);
+        }
+
+        .metric-checkbox.checked {
+            background-color: var(--navy-medium);
+            border-color: var(--navy-medium);
+        }
+
+        .metric-checkbox.checked::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: var(--white);
+            border-radius: 50%;
+        }
+
+        .metric-label {
+            font-size: 15px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-primary {
+            background-color: transparent;
+            color: var(--text-dark);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            background-color: var(--navy-dark);
+            transition: margin-left var(--transition-speed) ease;
+            min-height: calc(100vh - var(--header-height));
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .chart-container {
+            background-color: var(--blue-light);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 100px;
+            padding: 0 40px 0px 80px;
+            margin-top: 10px;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 120px;
+            background: linear-gradient(180deg, #1E3A5F 0%, #0B1E3D 100%);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: transform 0.3s ease;
+            align-self: flex-end;
+        }
+
+        .bar:hover {
+            transform: scale(1.05);
+        }
+
+        .bar.porto {
+            background: linear-gradient(180deg, #4A9FD8 0%, #2980B9 100%);
+        }
+
+        .bar-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-top: 10px;
+        }
+
+        .y-axis {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            width: 40px;
+            z-index: 10;
+            padding: 0;
+        }
+
+        .y-axis div {
+            text-align: right;
+            padding-right: 8px;
+            line-height: 1;
+        }
+
+        .y-axis-label {
+            position: absolute;
+            left: -90px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+
+        .grid-lines {
+            position: absolute;
+            left: 45px;
+            right: 0;
+            top: 0;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .grid-line {
+            width: 100%;
+            height: 1px;
+            background-color: rgba(30, 58, 95, 0.25);
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--blue-light);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .trend-indicator {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+        }
+
+        .trend-indicator.up {
+            border-bottom: 20px solid #27AE60;
+        }
+
+        .trend-indicator.down {
+            border-top: 20px solid #E74C3C;
+        }
+
+        .stat-subtitle {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-top: 10px;
+        }
+
+        /* ajustes ao ecrã*/
+        @media (max-width: 768px) {
+            .chart-canvas {
+                gap: 40px;
+                height: 300px;
+            }
+
+            .bar {
+                width: 80px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 42px;
+            }
+        }
+
+        .sidebar.hidden ~ .content-area {
+            margin-left: 0;
+        }
+
+        .logout-button {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            padding: 14px 32px;
+            background-color: var(--blue-light);
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            z-index: 80;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-button:hover {
+            background-color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .filtros-button {
+            position: fixed;
+            top: calc(var(--header-height) + 20px);
+            right: 40px;
+            padding: 12px 28px;
+            background-color: var(--blue-light);
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            z-index: 80;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .filtros-button:hover {
+            background-color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 350px;
+            }
+
+            .header {
+                padding: 0 20px;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 100%;
+                --header-height: 80px;
+            }
+
+            .header {
+                padding: 0 15px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 20px;
+            }
+
+            .sidebar-toggle {
+                left: auto;
+                right: 20px;
+                top: calc(var(--header-height) + 10px);
+            }
+
+            .sidebar.hidden + .sidebar-toggle {
+                left: auto;
+                right: 20px;
+            }
+
+            .content-area {
+                margin-left: 0;
+            }
+
+            .filtros-button {
+                display: none;
+            }
+
+            .logout-button {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--navy-medium);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="back-button" onclick="goBack()" aria-label="Voltar">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h1 class="logo">InsideAirbnb</h1>
+        </div>
+        <div class="user-avatar" onclick="openUserMenu()" aria-label="Menu do utilizador"></div>
+    </header>
+
+
+    <div class="main-container">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="filter-row">
+                <span class="filter-label">País:</span>
+                <button class="filter-button" onclick="selectLocation(this, 'country', 1)">Clique</button>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Cidade:</span>
+                <button class="filter-button" onclick="selectLocation(this, 'city', 1)">Clique</button>
+            </div>
+            
+
+            <div class="section-divider"></div>
+            
+            <div class="filter-row">
+                <span class="filter-label">País:</span>
+                <button class="filter-button" onclick="selectLocation(this, 'country', 2)">Clique</button>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Cidade:</span>
+                <button class="filter-button" onclick="selectLocation(this, 'city', 2)">Clique</button>
+            </div>
+
+
+            <h2 class="section-title">Indique dados a comparar:</h2>
+            
+            <div class="metrics-list">
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Média de noites reservadas por listagem</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Preço médio por noite</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Nr de hosts</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Top anfitriões</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Nr de listagens médio por host</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Duração média das estadias</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Taxa média de ocupação</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Proporções de tipo de propriedade</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Ganho médio</span>
+                </div>
+                <div class="metric-item" onclick="toggleMetric(this)">
+                    <div class="metric-checkbox"></div>
+                    <span class="metric-label">Número de listagens total</span>
+                </div>
+            </div>
+
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="selectAll()">Selecionar Tudo</button>
+                <button class="btn btn-secondary" onclick="compare()">Comparar</button>
+            </div>
+        </aside>
+
+
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Alternar barra lateral">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+
+        <main class="content-area" id="contentArea">
+
+        </main>
+    </div>
+
+
+    <button class="logout-button" onclick="logout()">Log out</button>
+
+    <script>
+        const state = {
+            location1: { country: null, city: null },
+            location2: { country: null, city: null }
+        };
+
+                const mockData = { /*dados utilizados para criar o gráfico*/
+            lisboa: {
+                avgListingsPerHost: 4,
+                avgNights: 3.5,
+                avgPrice: 85,
+                totalListings: 26000
+            },
+            porto: {
+                avgListingsPerHost: 3,
+                avgNights: 2.8,
+                avgPrice: 65,
+                totalListings: 18000
+            }
+        };
+
+        function selectLocation(button, type, locationIndex) {
+            const key = `location${locationIndex}`;
+
+            if (type === 'country') {
+                state[key].country = 'Portugal';
+                button.textContent = 'Portugal';
+                return;
+            }
+
+            const currentCity = state[key].city;
+
+            if (locationIndex === 1) {
+                state[key].city = currentCity === 'Lisboa' ? 'Porto' : 'Lisboa';
+            } else {
+                state[key].city = currentCity === 'Porto' ? 'Lisboa' : 'Porto';
+            }
+
+            button.textContent = state[key].city;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        function toggleMetric(metricElement) {
+            const checkbox = metricElement.querySelector('.metric-checkbox');
+            checkbox.classList.toggle('checked');
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.metric-checkbox');
+            const allSelected = Array.from(checkboxes).every(box =>
+                box.classList.contains('checked')
+            );
+
+            checkboxes.forEach(box => {
+                if (allSelected) {
+                    box.classList.remove('checked');
+                } else {
+                    box.classList.add('checked');
+                }
+            });
+        }
+
+        function compare() {
+            const items = document.querySelectorAll('.metric-item');
+            const selectedMetrics = [];
+
+            items.forEach(item => {
+                const checkbox = item.querySelector('.metric-checkbox');
+                if (checkbox.classList.contains('checked')) {
+                    const label = item.querySelector('.metric-label').textContent;
+                    selectedMetrics.push(label);
+                }
+            });
+
+            if (selectedMetrics.length === 0) {
+                return;
+            }
+
+            renderComparison(selectedMetrics);
+
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function getBarHeight(value, maxValue) {
+            const maxHeight = 260; // altura máxima em px
+            return (value / maxValue) * maxHeight;
+        }
+
+        function renderComparison(metrics) {
+            const content = document.getElementById('contentArea');
+            const hasListingsMetric = metrics.some(text =>
+                text.includes('Nr de listagens médio por host')
+            );
+
+            if (hasListingsMetric) { /*faz a altura das barras*/
+                const maxValue = Math.max(
+                    mockData.lisboa.avgListingsPerHost,
+                    mockData.porto.avgListingsPerHost
+                );
+
+                const lisbonHeight = getBarHeight(
+                    mockData.lisboa.avgListingsPerHost,
+                    maxValue
+                );
+                const portoHeight = getBarHeight(
+                    mockData.porto.avgListingsPerHost,
+                    maxValue
+                );
+
+                /*calcula os valores que aparecem no eixo y*/
+                const axisTop = Math.ceil(maxValue);
+                const axis75 = Math.ceil(maxValue * 0.75);
+                const axis50 = Math.ceil(maxValue * 0.5);
+                const axis25 = Math.ceil(maxValue * 0.25);
+                
+                /* isto: ${mockData.lisboa.avgListingsPerHost} é o valor dos cards*/
+                content.innerHTML = `
+                    <div class="chart-container">
+                        <h3 class="chart-title">Gráfico comparativo de nr de listagens</h3>
+                        <div class="chart-canvas">
+                            <div class="y-axis">
+                                <div>${axisTop}</div>
+                                <div>${axis75}</div>
+                                <div>${axis50}</div>
+                                <div>${axis25}</div>
+                                <div>0</div>
+                                <div class="y-axis-label">Nr de listagens (em milhares)</div>
+                            </div>
+                            <div class="grid-lines">
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                            </div>
+                            <div class="bar-group"> 
+                                <div class="bar" style="height: ${lisbonHeight}px;"></div>
+                                <div class="bar-label">Lisboa: ${mockData.lisboa.avgListingsPerHost}</div>
+                            </div> 
+                            <div class="bar-group">
+                                <div class="bar porto" style="height: ${portoHeight}px;"></div>
+                                <div class="bar-label">Porto: ${mockData.porto.avgListingsPerHost}</div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-title">Nr de listagens médio</div>
+                            <div class="stat-value">
+                                ${mockData.lisboa.avgListingsPerHost}
+                                <div class="trend-indicator ${
+                                    mockData.lisboa.avgListingsPerHost >
+                                    mockData.porto.avgListingsPerHost
+                                        ? 'up'
+                                        : 'down'
+                                }"></div>
+                            </div>
+                            <div class="stat-subtitle">por host - Lisboa</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Nr de listagens médio</div>
+                            <div class="stat-value">
+                                ${mockData.porto.avgListingsPerHost}
+                                <div class="trend-indicator ${
+                                    mockData.porto.avgListingsPerHost >
+                                    mockData.lisboa.avgListingsPerHost
+                                        ? 'up'
+                                        : 'down'
+                                }"></div>
+                            </div>
+                            <div class="stat-subtitle">por host - Porto</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <div class="chart-container">
+                    <h3 class="chart-title">Selecione métricas para visualizar comparações</h3>
+                    <p style="text-align: center; color: var(--blue-light); margin-top: 20px;">
+                        Escolha as métricas na barra lateral e clique em "Comparar"
+                    </p>
+                </div>
+            `;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function logout() {
+            window.location.href = '/login';
+        }
+
+        function handleInitialSidebar() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('hidden');
+            }
+        }
+
+        handleInitialSidebar();
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
